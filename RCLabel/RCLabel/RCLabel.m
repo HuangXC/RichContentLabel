@@ -13,7 +13,7 @@
  * distribute, sublicense, and/or sell copies of the Software, and to 
  * permit persons to whom the Software is furnished to do so, subject 
  * to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be 
  * included in all copies or substantial portions of the Software.
  * 
@@ -36,7 +36,6 @@
  */
 
 #import "RCLabel.h"
-#import "RegexKitLite.h"
 #define LINK_PADDING 2
 #define IMAGE_PADDING 2
 #define IMAGE_USER_WIDTH 180.0
@@ -198,7 +197,7 @@ static NSInteger totalCount = 0;
         
 		//[self setText:@""];
 		_textAlignment = RTTextAlignmentLeft;
-		_lineBreakMode = kCTLineBreakByWordWrapping;
+		_lineBreakMode = RTTextLineBreakModeWordWrapping;
 		_attrString = NULL;
         _ctFrame = NULL;
         _framesetter = NULL;
@@ -226,7 +225,7 @@ static NSInteger totalCount = 0;
        
 		//[self setText:@""];
 		_textAlignment = RTTextAlignmentLeft;
-		_lineBreakMode = kCTLineBreakByWordWrapping;
+		_lineBreakMode = RTTextLineBreakModeWordWrapping;
         //_lineBreakMode = kCTLineBreakByTruncatingTail;
 		_attrString = NULL;
         _ctFrame = NULL;
@@ -640,33 +639,15 @@ CGFloat MyGetWidthCallback( void* refCon ){
                     if (runBounds.size.width != 0 && runBounds.size.height != 0) {
                         
                         //runBounds.size.height = lineAscent + fabsf(lineDescent) + lineLeading;
-                        CGFloat lineHeight = lineAscent + fabsf(lineDescent) + lineLeading;
                         runBounds.origin.x += origin.x;
                         
                         
                         // this is more favourable
                         
-                        if (runBounds.size.height > IMAGE_LINK_BOUND_MIN_HEIGHT) {
-                            runBounds.origin.x -= LINK_PADDING;
-                            runBounds.size.width += LINK_PADDING * 2;
-                            runBounds.origin.y -= LINK_PADDING;
-                            runBounds.size.height += LINK_PADDING * 2;
-                        }
-                        else {
-                            if (ABS((runBounds.size.height - lineHeight)) <= LINK_PADDING * 6) {
-                                runBounds.origin.x -= LINK_PADDING * 2;
-                                runBounds.size.width += LINK_PADDING * 4;
-                                runBounds.size.height = lineHeight;
-                                
-                                runBounds.origin.y = (0 - lineHeight / 8 - lineAscent);               
-                                runBounds.size.height += lineHeight / 4;
-                            }
-                            else {
-                                NSLog(@"%@",@"Run will use its original height!");
-                                runBounds.origin.y -= runBounds.size.height / 8;            
-                                runBounds.size.height += runBounds.size.height / 4;
-                            }
-                        }
+                        runBounds.origin.x -= LINK_PADDING;
+                        runBounds.size.width += LINK_PADDING * 2;
+                        runBounds.origin.y -= LINK_PADDING;
+                        runBounds.size.height += LINK_PADDING * 2;
                         
                         
                         CGFloat y = rect.origin.y + rect.size.height - origin.y;
@@ -726,7 +707,6 @@ CGFloat MyGetWidthCallback( void* refCon ){
                                 
                                
                                 
-                                NSString *sccessoryUrl;
                                 
                                 
                                
@@ -736,9 +716,6 @@ CGFloat MyGetWidthCallback( void* refCon ){
                                     runBounds.size = MyGetSize(url);
                                     
                                 
-                                    CGFloat diff = lineHeight - runBounds.size.height;
-                                    
-                                    runBounds.origin.y += diff / 2.0;
                                     
                                     CGContextDrawImage(context, runBounds, component.img.CGImage);
                                     
@@ -1694,13 +1671,13 @@ CGFloat MyGetWidthCallback( void* refCon ){
 	
 }
 
+//Remove the space and quotation
 + (NSString*)stripURL:(NSString*)url {
     
     
-    
-    NSString *tempURL = [url stringByReplacingOccurrencesOfRegex:@"^\\\\?[\"\']" withString:@""];
-    tempURL = [tempURL stringByReplacingOccurrencesOfRegex:@"\\\\?[\"\']$" withString:@""];
-    return tempURL;
+     
+   return [[url stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@"\\\'\""]];
+
 }
 
 
@@ -1753,10 +1730,11 @@ CGFloat MyGetWidthCallback( void* refCon ){
     CGFloat lineAscent;
     CGFloat lineDescent;
     CGFloat lineLeading;
+    CTRunRef run = nil;
     CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
     BOOL isClicked = NO;
     for (int j = 0; j < CFArrayGetCount(runs); j++) {
-        CTRunRef run = CFArrayGetValueAtIndex(runs, j);
+        run = CFArrayGetValueAtIndex(runs, j);
         
         CGFloat ascent, descent, leading;
     
@@ -1781,15 +1759,17 @@ CGFloat MyGetWidthCallback( void* refCon ){
     
     
     
-	CFIndex index = CTLineGetStringIndexForPosition(line, location);
+    CFRange runRange = CTRunGetStringRange(run);
 	RTLabelComponent *tempComponent = nil;
 	for (RTLabelComponent *component in self.componentsAndPlainText.linkComponents)
 	{
-		if ((index >= component.position) && (index <= ([component.text length] + component.position)))
-		{
-			tempComponent = component;
-			
-		}
+        BOOL runStartAfterLink = ((runRange.location >= component.position) && (runRange.location < component.position + component.text.length));
+        BOOL runStartBeforeLink = ((runRange.location < component.position) && (runRange.location + runRange.length) > component.position );
+        if (runStartAfterLink || runStartBeforeLink) {
+            tempComponent = component;
+        }
+        
+      
 	}
     if (tempComponent) {
         self.currentLinkComponent = tempComponent;
@@ -1798,11 +1778,14 @@ CGFloat MyGetWidthCallback( void* refCon ){
     else {
         for (RTLabelComponent *component in self.componentsAndPlainText.imgComponents)
         {
-            if ((index >= component.position) && (index <= ([component.text length] + component.position)))
-            {
+            BOOL runStartAfterLink = ((runRange.location >= component.position) && (runRange.location < component.position + component.text.length));
+            BOOL runStartBeforeLink = ((runRange.location < component.position) && (runRange.location + runRange.length) > component.position );
+            if (runStartAfterLink || runStartBeforeLink) {
                 tempComponent = component;
-                
             }
+
+            
+           
         }
         if (tempComponent) {
             self.currentImgComponent = tempComponent;

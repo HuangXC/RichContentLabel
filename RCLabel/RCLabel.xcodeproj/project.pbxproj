@@ -15,7 +15,6 @@
 		77833BEF15BA743500E886BF /* RCAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 77833BEE15BA743500E886BF /* RCAppDelegate.m */; };
 		77833BF215BA743500E886BF /* RCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 77833BF115BA743500E886BF /* RCViewController.m */; };
 		77833BFD15BA748900E886BF /* RCLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = 77833BFB15BA748900E886BF /* RCLabel.m */; };
-		77833C0015BA853A00E886BF /* RegexKitLite.m in Sources */ = {isa = PBXBuildFile; fileRef = 77833BFE15BA853A00E886BF /* RegexKitLite.m */; };
 		77833C0515BA868200E886BF /* chrome.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 77833C0215BA868200E886BF /* chrome.jpg */; };
 		77833C0615BA868200E886BF /* ie.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 77833C0315BA868200E886BF /* ie.jpg */; };
 		77833C0815BA86A700E886BF /* safari.png in Resources */ = {isa = PBXBuildFile; fileRef = 77833C0715BA86A700E886BF /* safari.png */; };
@@ -47,8 +46,6 @@
 		77833BF115BA743500E886BF /* RCViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCViewController.m; sourceTree = "<group>"; };
 		77833BFB15BA748900E886BF /* RCLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCLabel.m; sourceTree = "<group>"; };
 		77833BFC15BA748900E886BF /* RCLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCLabel.h; sourceTree = "<group>"; };
-		77833BFE15BA853A00E886BF /* RegexKitLite.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RegexKitLite.m; sourceTree = "<group>"; };
-		77833BFF15BA853A00E886BF /* RegexKitLite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RegexKitLite.h; sourceTree = "<group>"; };
 		77833C0215BA868200E886BF /* chrome.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = chrome.jpg; sourceTree = "<group>"; };
 		77833C0315BA868200E886BF /* ie.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ie.jpg; sourceTree = "<group>"; };
 		77833C0715BA86A700E886BF /* safari.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = safari.png; sourceTree = "<group>"; };
@@ -128,8 +125,6 @@
 				77833C0715BA86A700E886BF /* safari.png */,
 				77833C0215BA868200E886BF /* chrome.jpg */,
 				77833C0315BA868200E886BF /* ie.jpg */,
-				77833BFE15BA853A00E886BF /* RegexKitLite.m */,
-				77833BFF15BA853A00E886BF /* RegexKitLite.h */,
 				77833BFB15BA748900E886BF /* RCLabel.m */,
 				77833BFC15BA748900E886BF /* RCLabel.h */,
 				77833BED15BA743500E886BF /* RCAppDelegate.h */,
@@ -179,7 +174,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = RC;
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = 77833BD415BA743300E886BF /* Build configuration list for PBXProject "RCLabel" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -228,7 +223,6 @@
 				77833BEF15BA743500E886BF /* RCAppDelegate.m in Sources */,
 				77833BF215BA743500E886BF /* RCViewController.m in Sources */,
 				77833BFD15BA748900E886BF /* RCLabel.m in Sources */,
-				77833C0015BA853A00E886BF /* RegexKitLite.m in Sources */,
 				77833C0D15BA86CA00E886BF /* RCViewCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -252,6 +246,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -276,6 +274,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
