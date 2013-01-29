@@ -171,6 +171,7 @@ static NSInteger totalCount = 0;
 - (void)applyFontAttributes:(NSDictionary*)attributes toText:(CFMutableAttributedStringRef)text atPosition:(int)position withLength:(int)length;
 - (void)applyParagraphStyleToText:(CFMutableAttributedStringRef)text attributes:(NSMutableDictionary*)attributes atPosition:(int)position withLength:(int)length;
 - (void)applyImageAttributes:(CFMutableAttributedStringRef)text attributes:(NSMutableDictionary*)attributes atPosition:(int)position withLength:(int)length;
+- (void)applyLinkAttributes:(CFMutableAttributedStringRef)text attributes:(NSMutableDictionary*)attributes atPosition:(int)position withLength:(int)length;
 @end
 
 @implementation RCLabel
@@ -203,7 +204,7 @@ static NSInteger totalCount = 0;
         _framesetter = NULL;
         _optimumSize = self.frame.size;
         _paragraphReplacement = @"\n";
-		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL); 
+		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL);
 		[self setMultipleTouchEnabled:YES];
     }
     return self;
@@ -232,7 +233,8 @@ static NSInteger totalCount = 0;
         _framesetter = NULL;
         _optimumSize = _frame.size;
         _paragraphReplacement = @"\n";
-		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL); 
+		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL);
+
 		[self setMultipleTouchEnabled:YES];
     }
     return self;
@@ -602,7 +604,6 @@ CGFloat MyGetWidthCallback( void* refCon ){
 	
 	CFRange range;
 	CGSize constraint = CGSizeMake(self.frame.size.width, 1000000);
-    CGSize sizeBeforeRender = _optimumSize;
     CGSize sizeAfterRender = CTFramesetterSuggestFrameSizeWithConstraints(_framesetter, CFRangeMake(0, [self.componentsAndPlainText.plainTextData length]), nil, constraint, &range); 
 	self.optimumSize = sizeAfterRender;
     
@@ -673,102 +674,60 @@ CGFloat MyGetWidthCallback( void* refCon ){
             
         CGAffineTransform flipVertical = CGAffineTransformMake(1,0,0,-1,0,self.frame.size.height);
         CGContextConcatCTM(context, flipVertical);
-        CTFrameDraw(_ctFrame, context);
+        
         //Calculate the bounding for image
 
-        for (RTLabelComponent *component in self.componentsAndPlainText.imgComponents)
-        {
-            for (int i = 0; i < CFArrayGetCount(lines); i++) {
-                CTLineRef line = CFArrayGetValueAtIndex(lines, i);
-                CGFloat lineAscent;
-                CGFloat lineDescent;
-                CGFloat lineLeading;
-                CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
-                CGFloat lineHeight = lineAscent + fabsf(lineDescent) + lineLeading;
-                CFRange lineRange = CTLineGetStringRange(line);
-                if (lineRange.location <= component.position && lineRange.location + lineRange.length >= component.position + [component.text length]) {
-                    CFArrayRef runs = CTLineGetGlyphRuns(line);
-                    for (int j = 0; j < CFArrayGetCount(runs); j++) {
-                        CTRunRef run = CFArrayGetValueAtIndex(runs, j);
-                        CGRect runBounds = [self BoundingRectFroImage:component withRun:run];
-                        if (runBounds.size.width != 0 && runBounds.size.height != 0) {
-                            CGPoint origin = lineOrigins[i];
-                            runBounds.origin.x += origin.x;
-                            runBounds.origin.y = origin.y;
-                            
-                            runBounds.origin.y -= 2 * IMAGE_PADDING;
-                            
-                            
-                            
-                            
-                            
-                            if ([component.attributes objectForKey:@"src"]) {
-                                NSString *url =  [component.attributes objectForKey:@"src"];
-                                
-                               
-                                
-                                
-                                
-                               
-                                if (component.img) {
-                                    
-                                    
-                                    runBounds.size = MyGetSize(url);
-                                    
-                                
-                                    
-                                    CGContextDrawImage(context, runBounds, component.img.CGImage);
-                                    
-                                                                        
-                                }
-                                else {
-                                    CGFloat diff = lineHeight - runBounds.size.height;
-                                    
-                                    runBounds.origin.y += diff / 2.0;
-                                    
-                                    CGContextSetFillColorWithColor(context, [[UIColor colorWithRed:(BG_COLOR&0xFF0000>>16)/255.f green:(BG_COLOR&0x00FF00>>8)/255.f blue:(BG_COLOR&0x0000FF)/255.f alpha:1.0f] CGColor]);
-                                    
-                                    CGContextFillRect(context, runBounds); 
-                                    
-                                    
-                                    /*if (component.isDownloadFail) {
-                                        
-                                        [[component.attributes objectForKey:@"src"] drawInRect:runBounds withFont:self.font lineBreakMode:UILineBreakModeTailTruncation];
-                                    }*/
-                                }
-                            }
-                            else {
-                                CGContextSetFillColorWithColor(context, [[UIColor colorWithRed:(BG_COLOR&0xFF0000>>16)/255.f green:(BG_COLOR&0x00FF00>>8)/255.f blue:(BG_COLOR&0x0000FF)/255.f alpha:1.0f] CGColor]);
-                                
-                                CGContextFillRect(context, runBounds); 
-                                
-                                
-                            }
-                            
-                            
-                            
-                            
-                                
-                           
-                                 
-                        }
-                            
+        
+        for (int i = 0; i < CFArrayGetCount(lines); i++) {
+            CTLineRef line = CFArrayGetValueAtIndex(lines, i);
+            CGFloat lineAscent;
+            CGFloat lineDescent;
+            CGFloat lineLeading;
+            CTLineGetTypographicBounds(line, &lineAscent, &lineDescent, &lineLeading);
+            CFArrayRef runs = CTLineGetGlyphRuns(line);
+            for (int j = 0; j < CFArrayGetCount(runs); j++) {
+                CGFloat ascent;
+                CGFloat descent;
+                CGPoint origin = lineOrigins[i];
+                CTRunRef run = CFArrayGetValueAtIndex(runs, j);
+                NSDictionary* attributes = (NSDictionary*)CTRunGetAttributes(run);
+                CGRect runBounds;
+                runBounds.size.width=CTRunGetTypographicBounds(run, CFRangeMake(0,0), &ascent, &descent, NULL);
+                
+                runBounds=CGRectMake(origin.x+CTLineGetOffsetForStringIndex(line, CTRunGetStringRange(run).location, NULL), origin.y-descent, bounds.size.width, ascent+descent);
+
+                if ([attributes objectForKey:@"imageSrc"]) {
+                    CGPoint origin = lineOrigins[i];
+                    runBounds.origin.x += origin.x;
+                    runBounds.origin.y = origin.y;                    
+                    runBounds.origin.y -= 2 * IMAGE_PADDING;
+
+                    
+                    NSString *url =  [attributes objectForKey:@"imageSrc"];
+                    
+                    if ([UIImage imageNamed:url]) {
+                        runBounds.size = MyGetSize(url);
+                        CGContextDrawImage(context, runBounds, [UIImage imageNamed:url].CGImage);
                     }
+                    else {
+                        CGContextSetFillColorWithColor(context, [[UIColor colorWithRed:(BG_COLOR&0xFF0000>>16)/255.f green:(BG_COLOR&0x00FF00>>8)/255.f blue:(BG_COLOR&0x0000FF)/255.f alpha:1.0f] CGColor]);
+                        CGContextFillRect(context, runBounds);
+                        
+                    }
+                    
+                    
                 }
-                    
-                    
+                
             }
             
+            
+            
+            
+            
+            
         }
-        if (self.componentsAndPlainText.imgComponents.count) {
-            if (abs(sizeAfterRender.height - sizeBeforeRender.height) > 10) {
-                if (self.sizeDelegate && [self.sizeDelegate respondsToSelector:@selector(rtLabel:didChangedSize:)]) {
-                    [self.sizeDelegate rtLabel:self didChangedSize:sizeAfterRender];
-                }
-                NSLog(@"size changed!!");
-
-            }
-        }
+        CTFrameDraw(_ctFrame, context);
+       
     }
     _visibleRange = CTFrameGetVisibleStringRange(_ctFrame);
 
@@ -1178,8 +1137,10 @@ CGFloat MyGetWidthCallback( void* refCon ){
    
     CTRunDelegateRef delegate = CTRunDelegateCreate(&callbacks, [attributes objectForKey:@"src"]);
     
-    CFStringRef keys[] = { kCTRunDelegateAttributeName };
-    CFTypeRef values[] = { delegate };
+    
+    
+    CFStringRef keys[] = { kCTRunDelegateAttributeName ,(CFStringRef)@"imageSrc"};
+    CFTypeRef values[] = { delegate ,[attributes objectForKey:@"src"]};
     
     CFDictionaryRef imgDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
     
@@ -1190,6 +1151,13 @@ CGFloat MyGetWidthCallback( void* refCon ){
     CFRelease(imgDict);
 
 
+}
+
+- (void)applyLinkAttributes:(CFMutableAttributedStringRef)text attributes:(NSMutableDictionary*)attributes atPosition:(int)position withLength:(int)length {
+    
+    [self applyBoldStyleToText:text atPosition:position withLength:length];
+    [self applyColor:@"#16387C" toText:text atPosition:position withLength:length];
+    
 }
 
 - (CGSize)optimumSize
@@ -1207,7 +1175,6 @@ CGFloat MyGetWidthCallback( void* refCon ){
     self.textColor = nil;
     
     self.font = nil;
-    
    // self.text = nil;
     
     self.paragraphReplacement = nil;
@@ -1460,9 +1427,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
                 
                 
                 NSString *url =  [component.attributes objectForKey:@"src"];
-                /*NSString *inlineStyleWidth = [component.attributes objectForKey:@"width"];
-                NSString *inlineStyleHeight = [component.attributes objectForKey:@"height"];
-                */
+               
                 
                 
                 NSString *tempURL = [RCLabel stripURL:url];
@@ -1472,6 +1437,9 @@ CGFloat MyGetWidthCallback( void* refCon ){
                     
                     component.img = tempImg;
                     
+                }
+                else {
+                    [component.attributes setObject:@"" forKey:@"src"];
                 }
                 
           
@@ -1590,26 +1558,16 @@ CGFloat MyGetWidthCallback( void* refCon ){
 		}
 		else if ([component.tagLabel isEqualToString:@"a"])
 		{
-                
-            [self applyBoldStyleToText:_attrString atPosition:component.position withLength:[component.text length]];
-            if(![self.textColor isEqual:[UIColor whiteColor]]) {
-                [self applyColor:@"#16387C" toText:_attrString atPosition:component.position withLength:[component.text length]];
-            }
-            else {
-                [self applyColor:nil toText:_attrString atPosition:component.position withLength:[component.text length]];
+            NSString *value = [component.attributes objectForKey:@"href"];
+            if (!value) {
+                [component.attributes setObject:@"" forKey:@"href"];
                 
             }
+            [self applyLinkAttributes:_attrString attributes:component.attributes atPosition:component.position withLength:[component.text length]];
             
-            //[self applySingleUnderlineText:_attrString atPosition:component.position withLength:[component.text length]];
-				
 			
 			
-			NSString *value = [component.attributes objectForKey:@"href"];
-			//value = [value stringByReplacingOccurrencesOfString:@"'" withString:@""];
-            if (value) {
-                [component.attributes setObject:value forKey:@"href"];
-
-            }
+			
         }
 		else if ([component.tagLabel isEqualToString:@"u"] || [component.tagLabel isEqualToString:@"underlined"])
 		{
