@@ -516,7 +516,8 @@ CGFloat MyGetWidthCallback( void* refCon ){
         
         
         if ([[linkComponentString substringToIndex:1] isEqualToString:@"\n"]) {
-            rangePosition+=1;
+            rangePosition += 1;
+            rangeLength -= 1;
         }
         if ([[linkComponentString substringFromIndex:[linkComponentString length] - 1] isEqualToString:@"\n"]) {
             rangeLength -= 1;
@@ -529,7 +530,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
         if (rangePosition >= glyphCount) {
             rangePosition = 0;
         }
-        if (rangeLength == runRange.length) {
+        if (rangeLength + rangePosition >= runRange.length) {
             rangeLength = 0;
         }
         // work out the bounding rect for the glyph run (this doesn't include the origin)
@@ -1718,6 +1719,8 @@ CGFloat MyGetWidthCallback( void* refCon ){
     
     
     CFRange runRange = CTRunGetStringRange(run);
+    CFIndex index = CTLineGetStringIndexForPosition(line, location);
+
 	RTLabelComponent *tempComponent = nil;
 	for (RTLabelComponent *component in self.componentsAndPlainText.linkComponents)
 	{
@@ -1725,6 +1728,9 @@ CGFloat MyGetWidthCallback( void* refCon ){
         BOOL runStartBeforeLink = ((runRange.location < component.position) && (runRange.location + runRange.length) > component.position );
         if (runStartAfterLink || runStartBeforeLink) {
             tempComponent = component;
+            if ((index >= component.position) && (index < component.text.length + component.position)) {
+                break;
+            }
         }
         
       
@@ -1740,6 +1746,9 @@ CGFloat MyGetWidthCallback( void* refCon ){
             BOOL runStartBeforeLink = ((runRange.location < component.position) && (runRange.location + runRange.length) > component.position );
             if (runStartAfterLink || runStartBeforeLink) {
                 tempComponent = component;
+                if ((index >= component.position) && (index < component.text.length + component.position)) {
+                    break;
+                }
             }
 
             
