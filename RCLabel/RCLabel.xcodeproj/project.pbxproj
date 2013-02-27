@@ -295,6 +295,7 @@
 		77833BF915BA743500E886BF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RCLabel/RCLabel-Prefix.pch";
 				INFOPLIST_FILE = "RCLabel/RCLabel-Info.plist";
@@ -308,6 +309,7 @@
 		77833BFA15BA743500E886BF /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "RCLabel/RCLabel-Prefix.pch";
 				INFOPLIST_FILE = "RCLabel/RCLabel-Info.plist";

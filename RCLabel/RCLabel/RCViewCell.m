@@ -20,7 +20,6 @@
         // Initialization code.
         RCLabel *label = [[RCLabel alloc] initWithFrame:CGRectMake(10,0,300,100)];
 		self.rtLabel = label;
-        [label release];
 		[self.contentView addSubview:self.rtLabel];
 		
 		[self.rtLabel setBackgroundColor:[UIColor clearColor]];
@@ -43,10 +42,6 @@
 
 
 
-- (void)dealloc {
-	self.rtLabel = nil;
-    [super dealloc];
-}
 
 
 @end

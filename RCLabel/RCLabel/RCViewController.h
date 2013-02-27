@@ -13,6 +13,6 @@
 	NSMutableArray *dataArray;
 }
 
-@property (nonatomic, retain) NSMutableArray *dataArray;
+@property (nonatomic, strong) NSMutableArray *dataArray;
 
 @end

@@ -79,7 +79,7 @@ static NSMutableDictionary *imgSizeDict = NULL;
 
 + (id)componentWithString:(NSString*)aText tag:(NSString*)aTagLabel attributes:(NSMutableDictionary*)theAttributes
 {
-	return [[[self alloc] initWithString:aText tag:aTagLabel attributes:theAttributes] autorelease];
+	return [[self alloc] initWithString:aText tag:aTagLabel attributes:theAttributes];
 }
 
 - (id)initWithTag:(NSString*)aTagLabel position:(int)aPosition attributes:(NSMutableDictionary*)theAttributes 
@@ -96,7 +96,7 @@ static NSMutableDictionary *imgSizeDict = NULL;
 
 +(id)componentWithTag:(NSString*)aTagLabel position:(int)aPosition attributes:(NSMutableDictionary*)theAttributes
 {
-	return [[[self alloc] initWithTag:aTagLabel position:aPosition attributes:theAttributes] autorelease];
+	return [[self alloc] initWithTag:aTagLabel position:aPosition attributes:theAttributes];
 }
 
 
@@ -111,14 +111,6 @@ static NSMutableDictionary *imgSizeDict = NULL;
 	return desc;
 }
 
-- (void)dealloc 
-{
-    self.text = nil;
-    self.tagLabel = nil;
-    self.attributes = nil;
-    self.img = nil;
-    [super dealloc];
-}
 
 @end
 
@@ -129,13 +121,6 @@ static NSMutableDictionary *imgSizeDict = NULL;
 @synthesize linkComponents = linkComponents_;
 @synthesize imgComponents = imgComponents_;
 
-- (void)dealloc {
-    self.plainTextData = nil;
-    self.components = nil;
-    self.linkComponents = nil;
-    self.imgComponents = nil;
-    [super dealloc];
-}
 
 
 @end 
@@ -191,7 +176,7 @@ static NSInteger totalCount = 0;
     if (self) {
         [self setBackgroundColor:[UIColor clearColor]];
 		self.font = [UIFont systemFontOfSize:14];
-        _originalColor = [[UIColor colorWithRed:0x2e/255.0 green:0x2e/255.0 blue:0x2e/255.0 alpha:1.0] retain];
+        _originalColor = [UIColor colorWithRed:0x2e/255.0 green:0x2e/255.0 blue:0x2e/255.0 alpha:1.0];
 		self.textColor = _originalColor;
         self.currentLinkComponent = nil;
 		self.currentImgComponent = nil;
@@ -204,7 +189,7 @@ static NSInteger totalCount = 0;
         _framesetter = NULL;
         _optimumSize = self.frame.size;
         _paragraphReplacement = @"\n";
-		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL);
+		_thisFont = CTFontCreateWithName ((__bridge CFStringRef)[self.font fontName], [self.font pointSize], NULL);
 		[self setMultipleTouchEnabled:YES];
     }
     return self;
@@ -219,7 +204,7 @@ static NSInteger totalCount = 0;
         // Initialization code.
 		[self setBackgroundColor:[UIColor clearColor]];
 		self.font = [UIFont systemFontOfSize:14];
-		_originalColor = [[UIColor colorWithRed:0x2e/255.0 green:0x2e/255.0 blue:0x2e/255.0 alpha:1.0] retain];
+		_originalColor = [UIColor colorWithRed:0x2e/255.0 green:0x2e/255.0 blue:0x2e/255.0 alpha:1.0];
 		self.textColor = _originalColor;
         self.currentLinkComponent = nil;
 		self.currentImgComponent = nil;
@@ -233,7 +218,7 @@ static NSInteger totalCount = 0;
         _framesetter = NULL;
         _optimumSize = _frame.size;
         _paragraphReplacement = @"\n";
-		_thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL);
+		_thisFont = CTFontCreateWithName ((__bridge CFStringRef)[self.font fontName], [self.font pointSize], NULL);
 
 		[self setMultipleTouchEnabled:YES];
     }
@@ -280,7 +265,6 @@ static NSInteger totalCount = 0;
 {
     if (_textColor) {
         if (_textColor != textColor) {
-            [_textColor release];
             _textColor = nil;
         }
         else {
@@ -288,7 +272,7 @@ static NSInteger totalCount = 0;
         }
              
     }
-    _textColor = [textColor retain];
+    _textColor = textColor;
     [self genAttributedString];
     [self setNeedsDisplay];
 }
@@ -302,19 +286,18 @@ static NSInteger totalCount = 0;
 {
     if (_font) {
         if (_font != font) {
-            [_font release];
             _font = nil;
         }
         else {
             return;
         }
     }
-    _font = [font retain];
+    _font = font;
     if (_font) {
         if (_thisFont) {
             CFRelease(_thisFont);
         }
-        _thisFont = CTFontCreateWithName ((CFStringRef)[self.font fontName], [self.font pointSize], NULL);
+        _thisFont = CTFontCreateWithName ((__bridge CFStringRef)[self.font fontName], [self.font pointSize], NULL);
         
     }
     
@@ -331,7 +314,6 @@ static NSInteger totalCount = 0;
 - (void)setComponentsAndPlainText:(RTLabelComponentsStructure*)componnetsDS {
     if (componentsAndPlainText_) {
         if (componentsAndPlainText_ != componnetsDS) {
-            [componentsAndPlainText_ release];
             componentsAndPlainText_ = nil;
         }
         else {
@@ -340,7 +322,7 @@ static NSInteger totalCount = 0;
         
     }
     
-    componentsAndPlainText_ = [componnetsDS retain];
+    componentsAndPlainText_ = componnetsDS;
     
     [self genAttributedString];
     
@@ -352,13 +334,13 @@ static NSInteger totalCount = 0;
 }
 
 CGSize MyGetSize(void* refCon) {
-    NSString *src = (NSString*)refCon;
+    NSString *src = (__bridge NSString*)refCon;
     CGSize size = CGSizeMake(100.0,IMAGE_MAX_HEIGHT);
     
     if (src) {
         
         if (!imgSizeDict) {
-            imgSizeDict = [[NSMutableDictionary dictionary] retain];
+            imgSizeDict = [NSMutableDictionary dictionary];
         }
         
         NSValue* nsv = [imgSizeDict objectForKey:src];
@@ -410,16 +392,16 @@ void MyDeallocationCallback( void* refCon ){
    
 }
 CGFloat MyGetAscentCallback( void *refCon ){
-    NSString *imgParameter = (NSString*)refCon;
+    NSString *imgParameter = (__bridge NSString*)refCon;
     
     if (imgParameter) {
-        return MyGetSize(imgParameter).height;
+        return MyGetSize((__bridge void *)(imgParameter)).height;
     }
 
     return IMAGE_USER_HEIGHT;
 }
 CGFloat MyGetDescentCallback( void *refCon ){
-    NSString *imgParameter = (NSString*)refCon;
+    NSString *imgParameter = (__bridge NSString*)refCon;
     
     if (imgParameter) {
         return 0;
@@ -560,7 +542,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
         // work out the bounding rect for the glyph run (this doesn't include the origin)
         NSInteger index = imgComponent.position - runRange.location;
         
-        CGSize imageSize = MyGetSize([imgComponent.attributes objectForKey:@"src"]);
+        CGSize imageSize = MyGetSize((__bridge void *)([imgComponent.attributes objectForKey:@"src"]));
         
         runBounds.size.width = imageSize.width;
         runBounds.size.height = imageSize.height;
@@ -691,7 +673,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
                 CGFloat descent;
                 CGPoint origin = lineOrigins[i];
                 CTRunRef run = CFArrayGetValueAtIndex(runs, j);
-                NSDictionary* attributes = (NSDictionary*)CTRunGetAttributes(run);
+                NSDictionary* attributes = (__bridge NSDictionary*)CTRunGetAttributes(run);
                 CGRect runBounds;
                 runBounds.size.width=CTRunGetTypographicBounds(run, CFRangeMake(0,0), &ascent, &descent, NULL);
                 
@@ -707,7 +689,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
                     NSString *url =  [attributes objectForKey:@"imageSrc"];
                     
                     if ([UIImage imageNamed:url]) {
-                        runBounds.size = MyGetSize(url);
+                        runBounds.size = MyGetSize((__bridge void *)(url));
                         CGContextDrawImage(context, runBounds, [UIImage imageNamed:url].CGImage);
                     }
                     else {
@@ -848,7 +830,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 - (void)applySingleUnderlineText:(CFMutableAttributedStringRef)text atPosition:(int)position withLength:(int)length
 {
     CFStringRef keys[] = { kCTUnderlineStyleAttributeName };
-    CFTypeRef values[] = { (CFNumberRef)[NSNumber numberWithInt:kCTUnderlineStyleSingle] };
+    CFTypeRef values[] = { (__bridge CFNumberRef)[NSNumber numberWithInt:kCTUnderlineStyleSingle] };
     
     CFDictionaryRef fontDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
     
@@ -861,7 +843,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 {
     
     CFStringRef keys[] = { kCTUnderlineStyleAttributeName };
-    CFTypeRef values[] = { (CFNumberRef)[NSNumber numberWithInt:kCTUnderlineStyleDouble] };
+    CFTypeRef values[] = { (__bridge CFNumberRef)[NSNumber numberWithInt:kCTUnderlineStyleDouble] };
     
     CFDictionaryRef fontDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
     
@@ -875,7 +857,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 - (void)applyItalicStyleToText:(CFMutableAttributedStringRef)text atPosition:(int)position withLength:(int)length
 {
 	UIFont *font = [UIFont italicSystemFontOfSize:self.font.pointSize];
-	CTFontRef italicFont = CTFontCreateWithName ((CFStringRef)[font fontName], [font pointSize], NULL); 
+	CTFontRef italicFont = CTFontCreateWithName ((__bridge CFStringRef)[font fontName], [font pointSize], NULL); 
     
     
     CFStringRef keys[] = { kCTFontAttributeName };
@@ -905,7 +887,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 		{
             
             CFStringRef keys[] = { kCTStrokeWidthAttributeName };
-            CFTypeRef values[] = { [NSNumber numberWithFloat:[[attributes objectForKey:@"stroke"] intValue]] };
+            CFTypeRef values[] = { (__bridge CFTypeRef)([NSNumber numberWithFloat:[[attributes objectForKey:@"stroke"] intValue]]) };
             
             CFDictionaryRef fontDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
             
@@ -918,7 +900,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 		else if ([key isEqualToString:@"kern"])
 		{
             CFStringRef keys[] = { kCTKernAttributeName };
-            CFTypeRef values[] = { [NSNumber numberWithFloat:[[attributes objectForKey:@"kern"] intValue]] };
+            CFTypeRef values[] = { (__bridge CFTypeRef)([NSNumber numberWithFloat:[[attributes objectForKey:@"kern"] intValue]]) };
             
             CFDictionaryRef fontDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
             
@@ -975,7 +957,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
 	}
 	if (font)
 	{
-		CTFontRef customFont = CTFontCreateWithName ((CFStringRef)[font fontName], [font pointSize], NULL); 
+		CTFontRef customFont = CTFontCreateWithName ((__bridge CFStringRef)[font fontName], [font pointSize], NULL); 
         
         
         
@@ -999,7 +981,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
     //If the font size is very large(bigger than 30), core text will invoke a memory
     //warning, and may cause crash.
     UIFont *font = [UIFont boldSystemFontOfSize:self.font.pointSize + 1];
-    CTFontRef boldFont = CTFontCreateWithName ((CFStringRef)[font fontName], [font pointSize], NULL); 
+    CTFontRef boldFont = CTFontCreateWithName ((__bridge CFStringRef)[font fontName], [font pointSize], NULL); 
     CFStringRef keys[] = { kCTFontAttributeName };
     CFTypeRef values[] = { boldFont };
     
@@ -1136,12 +1118,12 @@ CGFloat MyGetWidthCallback( void* refCon ){
     callbacks.getDescent = MyGetDescentCallback;
     callbacks.getWidth = MyGetWidthCallback;
    
-    CTRunDelegateRef delegate = CTRunDelegateCreate(&callbacks, [attributes objectForKey:@"src"]);
+    CTRunDelegateRef delegate = CTRunDelegateCreate(&callbacks, (__bridge void *)([attributes objectForKey:@"src"]));
     
     
     
     CFStringRef keys[] = { kCTRunDelegateAttributeName ,(CFStringRef)@"imageSrc"};
-    CFTypeRef values[] = { delegate ,[attributes objectForKey:@"src"]};
+    CFTypeRef values[] = { delegate ,(__bridge CFTypeRef)([attributes objectForKey:@"src"])};
     
     CFDictionaryRef imgDict = CFDictionaryCreate(NULL, (const void **)&keys, (const void **)&values, sizeof(keys) / sizeof(keys[0]), NULL, NULL);
     
@@ -1178,11 +1160,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
     self.font = nil;
    // self.text = nil;
     
-    self.paragraphReplacement = nil;
-    self.currentLinkComponent = nil;
-    self.currentImgComponent = nil;
     
-    [_originalColor release];
     CFRelease(_thisFont);
     _thisFont = NULL;
     if (_ctFrame) {
@@ -1197,7 +1175,6 @@ CGFloat MyGetWidthCallback( void* refCon ){
         CFRelease(_attrString);
         _attrString = NULL;
     }
-    [super dealloc];
 }
 
 + (RTLabelComponentsStructure*)extractTextStyle:(NSString*)data
@@ -1497,7 +1474,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
     componentsDS.imgComponents = imgComponents;
     componentsDS.plainTextData = plainData;
     
-    return [componentsDS autorelease];
+    return componentsDS;
 }
 
 - (void)genAttributedString
@@ -1506,7 +1483,7 @@ CGFloat MyGetWidthCallback( void* refCon ){
         return;
     }
     
-    CFStringRef string = (CFStringRef)self.componentsAndPlainText.plainTextData;
+    CFStringRef string = (__bridge CFStringRef)self.componentsAndPlainText.plainTextData;
 	if (_attrString) {
         CFRelease(_attrString);
         _attrString = NULL;

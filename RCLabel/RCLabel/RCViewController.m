@@ -34,7 +34,6 @@
         [titleLabel setFont:[UIFont systemFontOfSize:20]];
 		[titleLabel setText:@"RTLabel"];
 		[self.navigationItem setTitleView:titleLabel];
-		[titleLabel release];
 		[titleLabel setTextAlignment:UITextAlignmentCenter];
 		
 		self.dataArray = [NSMutableArray array];
@@ -166,7 +165,6 @@
         
         
         CGSize optimalSize = [tempLabel optimumSize];
-        [tempLabel release];
         [rowInfo setObject:[NSNumber numberWithFloat:optimalSize.height + 5] forKey:@"cell_height"];
 		return [[rowInfo objectForKey:@"cell_height"] floatValue];
 	}
@@ -191,7 +189,7 @@
     RCViewCell *cell = (RCViewCell*)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) 
 	{
-        cell = [[[RCViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier] autorelease];
+        cell = [[RCViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
     RTLabelComponentsStructure *componentsDS = [RCLabel extractTextStyle:[rowInfo objectForKey:@"text"]];
     cell.rtLabel.componentsAndPlainText = componentsDS;   
@@ -221,10 +219,6 @@
 }
 
 
-- (void)dealloc {
-	self.dataArray = nil;
-    [super dealloc];
-}
 
 
 

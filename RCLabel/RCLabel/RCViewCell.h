@@ -12,5 +12,5 @@
 @interface RCViewCell : UITableViewCell {
 	RCLabel *rtLabel;
 }
-@property (nonatomic, retain) RCLabel *rtLabel;
+@property (nonatomic, strong) RCLabel *rtLabel;
 @end

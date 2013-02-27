@@ -82,8 +82,8 @@ typedef enum
 	
 	CGSize _optimumSize;
    
-	id<RTLabelDelegate> _delegate;
-    id<RTLabelSizeDelegate> _sizeDelegate;
+	id<RTLabelDelegate> __unsafe_unretained _delegate;
+    id<RTLabelSizeDelegate> __unsafe_unretained _sizeDelegate;
     CTFramesetterRef _framesetter;
     CTFrameRef _ctFrame;
     CFRange _visibleRange;
@@ -96,11 +96,11 @@ typedef enum
 }
 
 
-@property (nonatomic, assign) id<RTLabelDelegate> delegate;
-@property (nonatomic, assign) id<RTLabelSizeDelegate> sizeDelegate;
+@property (nonatomic, unsafe_unretained) id<RTLabelDelegate> delegate;
+@property (nonatomic, unsafe_unretained) id<RTLabelSizeDelegate> sizeDelegate;
 @property (nonatomic, copy) NSString *paragraphReplacement;
-@property (nonatomic,retain)RTLabelComponent * currentLinkComponent;
-@property (nonatomic,retain)RTLabelComponent * currentImgComponent;
+@property (nonatomic,strong)RTLabelComponent * currentLinkComponent;
+@property (nonatomic,strong)RTLabelComponent * currentImgComponent;
 
 + (RTLabelComponentsStructure*)extractTextStyle:(NSString*)data;
 + (NSString*)stripURL:(NSString*)url;
@@ -143,10 +143,10 @@ typedef enum
 @property (nonatomic, assign) int componentIndex;
 @property (nonatomic, copy) NSString *text;
 @property (nonatomic, copy) NSString *tagLabel;
-@property (nonatomic, retain) NSMutableDictionary *attributes;
+@property (nonatomic, strong) NSMutableDictionary *attributes;
 @property (nonatomic, assign) int position;
 @property (nonatomic, assign) BOOL isClosure;
-@property (nonatomic, retain) UIImage *img;
+@property (nonatomic, strong) UIImage *img;
 
 
 
@@ -164,8 +164,8 @@ typedef enum
     NSArray *linkComponents_;
     NSArray *imgComponents_;
 }
-@property(nonatomic,retain) NSArray *components;
-@property(nonatomic,retain) NSArray *linkComponents;
-@property(nonatomic,retain) NSArray *imgComponents;
+@property(nonatomic,strong) NSArray *components;
+@property(nonatomic,strong) NSArray *linkComponents;
+@property(nonatomic,strong) NSArray *imgComponents;
 @property(nonatomic, copy) NSString *plainTextData;
 @end
